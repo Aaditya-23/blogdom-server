@@ -2,58 +2,11 @@ import Blog from "../models/blog.js";
 
 export const FetchBlogs = async (req, res) => {
   try {
-    // const blogs = await Blog.find();
-
-    const data = [
-      {
-        _id: "34afk",
-        title: "Chapter 1",
-        body: "From the corner of the divan of Persian saddle-bags on which he was lying, smoking, as was his custom, innumerable cigarettes, Lord Henry Wotton could just catch the gleam of the honey-sweet and honey-coloured blossoms of a laburnum, whose tremulous branches seemed hardly able to bear the burden of a beauty so flamelike as theirs; and now and then the fantastic shadows of birds in flight flitted across the long tussore-silk curtains that were stretched in front of the huge window, producing a kind of momentary Japanese effect, and making him think of those pallid, jade-faced painters of Tokyo who, through the medium of an art that is necessarily immobile, seek to convey the sense of swiftness and motion. The sullen murmur of the bees shouldering their way through the long unmown grass, or circling with monotonous insistence round the dusty gilt horns of the straggling woodbine, seemed to make the stillness more oppressive. The dim roar of London was like the bourdon note of a distant organ.",
-        createdAt: "10/23/2002",
-        updatedAt: "11/5/2002",
-        categories: ["new", "trending", "fart", "joy"],
-        likes: 34,
-        comments: 50,
-        readTime: 2,
-      },
-      {
-        _id: "35afk",
-        title: "Chapter 2",
-        body: "From the corner of the divan of Persian saddle-bags on which he was lying, smoking, as was his custom, innumerable cigarettes, Lord Henry Wotton could just catch the gleam of the honey-sweet and honey-coloured blossoms of a laburnum, whose tremulous branches seemed hardly able to bear the burden of a beauty so flamelike as theirs; and now and then the fantastic shadows of birds in flight flitted across the long tussore-silk curtains that were stretched in front of the huge window, producing a kind of momentary Japanese effect, and making him think of those pallid, jade-faced painters of Tokyo who, through the medium of an art that is necessarily immobile, seek to convey the sense of swiftness and motion. The sullen murmur of the bees shouldering their way through the long unmown grass, or circling with monotonous insistence round the dusty gilt horns of the straggling woodbine, seemed to make the stillness more oppressive. The dim roar of London was like the bourdon note of a distant organ.",
-        createdAt: "10/23/2002",
-        updatedAt: "11/5/2002",
-        categories: ["new", "trending", "fart", "joy"],
-        likes: 34,
-        comments: 50,
-        readTime: 2,
-      },
-      {
-        _id: "36afk",
-        title: "Chapter 3",
-        body: "From the corner of the divan of Persian saddle-bags on which he was lying, smoking, as was his custom, innumerable cigarettes, Lord Henry Wotton could just catch the gleam of the honey-sweet and honey-coloured blossoms of a laburnum, whose tremulous branches seemed hardly able to bear the burden of a beauty so flamelike as theirs; and now and then the fantastic shadows of birds in flight flitted across the long tussore-silk curtains that were stretched in front of the huge window, producing a kind of momentary Japanese effect, and making him think of those pallid, jade-faced painters of Tokyo who, through the medium of an art that is necessarily immobile, seek to convey the sense of swiftness and motion. The sullen murmur of the bees shouldering their way through the long unmown grass, or circling with monotonous insistence round the dusty gilt horns of the straggling woodbine, seemed to make the stillness more oppressive. The dim roar of London was like the bourdon note of a distant organ.",
-        createdAt: "10/23/2002",
-        updatedAt: "11/5/2002",
-        categories: ["new", "trending", "fart", "joy"],
-        likes: 34,
-        comments: 50,
-        readTime: 2,
-      },
-      {
-        _id: "37afk",
-        title: "Chapter 4",
-        body: "From the corner of the divan of Persian <br/> saddle-bags on which he was lying, smoking, as was his custom, innumerable cigarettes, Lord Henry Wotton could just catch the gleam of the honey-sweet and honey-coloured blossoms of a laburnum, whose tremulous branches seemed hardly able to bear the burden of a beauty so flamelike as theirs; and now and then the fantastic shadows of birds in flight flitted across the long tussore-silk curtains that were stretched in front of the huge window, producing a kind of momentary Japanese effect, and making him think of those pallid, jade-faced painters of Tokyo who, through the medium of an art that is necessarily immobile, seek to convey the sense of swiftness and motion. The sullen murmur of the bees shouldering their way through the long unmown grass, or circling with monotonous insistence round the dusty gilt horns of the straggling woodbine, seemed to make the stillness more oppressive. The dim roar of London was like the bourdon note of a distant organ.",
-        createdAt: "10/23/2002",
-        updatedAt: "11/5/2002",
-        categories: ["new", "trending", "fart", "joy"],
-        likes: 34,
-        comments: 50,
-        readTime: 2,
-      },
-    ];
+    const blogs = await Blog.find();
 
     return res
       .status(200)
-      .json({ message: "Blogs Fetched successfully!", blogs: data });
+      .json({ message: "Blogs Fetched successfully!", blogs });
   } catch (error) {
     console.log("Error in fetching the blogs", error);
     return res.status(500).json({ message: "Internal Server Error!" });
@@ -62,8 +15,91 @@ export const FetchBlogs = async (req, res) => {
 
 export const PostBlog = async (req, res) => {
   try {
+    const { body } = req.body;
+
+    const blog = await Blog.create(req.body);
+
+    return res.status(201).json({
+      message: "Blog Posted Successfully!",
+      blog,
+    });
   } catch (error) {
     console.log("Error in posting the blog", error);
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
+
+export const PostComment = async (req, res) => {
+  try {
+    const { _id, author, body } = req.body;
+
+    const blog = await Blog.findOne({ _id });
+
+    if (!blog) return res.status(400).json({ message: "Invalid Request" });
+
+    blog.comments.push({ author, body, date: new Date() });
+    await blog.save();
+
+    return res
+      .status(201)
+      .json({ message: "Comment Posted Successfully", blog });
+  } catch (error) {
+    console.log("Error in posting the comment", error);
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
+
+export const DeleteComment = async (req, res) => {
+  try {
+    const { commentId, blogId } = req.body;
+
+    const blog = await Blog.findOne({ _id: blogId });
+
+    if (!blog) return res.status(400).json({ message: "Invalid Request" });
+
+    blog.comments = blog.comments.filter((comment) => {
+      return !comment._id.equals(commentId);
+    });
+
+    await blog.save();
+
+    return res.status(201).json({ message: "Blog Deleted Successfully", blog });
+  } catch (error) {
+    console.log("Error in deleting the comment", error);
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
+
+export const DeleteBlog = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    await Blog.findOneAndDelete({ _id });
+
+    return res.status(201).json({ message: "Blog deleted successfully" });
+  } catch (error) {
+    console.log("Error in deleting the blog", error);
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
+
+export const UpdateBlog = async (req, res) => {
+  try {
+    const { _id, title, body, readTime } = req.body;
+
+    const blog = await Blog.findOne({ _id });
+
+    if (!blog) return res.status(400).json({ message: "Invalid Request" });
+
+    blog.title = title;
+    blog.body = body;
+    blog.readTime = readTime;
+
+    await blog.save();
+
+    return res.status(201).json({ message: "Blog updated successfully", blog });
+  } catch (error) {
+    console.log("Error in updating the blog", error);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

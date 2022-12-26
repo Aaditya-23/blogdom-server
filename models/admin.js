@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 
-const userSchema = new Schema(
+const adminSchema = new Schema(
   {
     name: {
       type: String,
@@ -10,19 +10,17 @@ const userSchema = new Schema(
 
     email: {
       type: String,
-      lowercase: true,
       required: true,
+      lowercase: true,
     },
 
-    likedBlogs: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Blog",
-      },
-    ],
+    password: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-const User = model("User", userSchema);
-export default User;
+const Admin = model("Admin", adminSchema);
+export default Admin;

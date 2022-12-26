@@ -12,31 +12,28 @@ const blogSchema = new Schema(
       required: true,
     },
 
-    tags: {
-      type: String,
-      lowercase: true,
+    readTime: {
+      type: Number,
+      required: true,
     },
 
-    likes: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
     comments: [
-      {
-        body: {
-          type: String,
-          required: true,
-        },
+      new Schema(
+        {
+          body: {
+            type: String,
+            required: true,
+          },
 
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
+          author: {
+            type: String,
+            required: true,
+          },
         },
-      },
+        {
+          timestamps: true,
+        }
+      ),
     ],
   },
   {

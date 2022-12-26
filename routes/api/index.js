@@ -1,6 +1,7 @@
 import { Router } from "express";
 import blogs from "./blog.js";
-import user from "./user.js"
+import admin from "./admin.js";
+import contact from "./contact.js";
 
 const router = Router();
 
@@ -9,6 +10,7 @@ router.get("/", (req, res) => {
 });
 
 router.use("/blog", blogs);
-router.use("/user", user);
+router.use("/admin", admin);
+router.use("/contact", contact);
 
 export default router;
